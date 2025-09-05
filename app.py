@@ -8,8 +8,8 @@ from sklearn.preprocessing import StandardScaler
 # --- Load and prepare data ---
 @st.cache_data
 def load_data():
-    transactions_url = 'https://raw.githubusercontent.com/prathamesh-satav/Dynamic-Customer-Segmentation-using-LRFM-analysis/refs/heads/main/Transactions_Cleaned.csv' # Paste your raw URL here
-    demographics_url = 'https://raw.githubusercontent.com/prathamesh-satav/Dynamic-Customer-Segmentation-using-LRFM-analysis/refs/heads/main/CustomerDemographic_Cleaned.csv' # Paste your raw URL here
+    transactions_url = 'https://raw.githubusercontent.com/prathamesh-satav/Dynamic-Customer-Segmentation-using-LRFM-analysis/refs/heads/main/Transactions_Cleaned.csv'
+    demographics_url = 'https://raw.githubusercontent.com/prathamesh-satav/Dynamic-Customer-Segmentation-using-LRFM-analysis/refs/heads/main/CustomerDemographic_Cleaned.csv'
     
     transactions_df = pd.read_csv(transactions_url)
     demographics_df = pd.read_csv(demographics_url)
@@ -21,11 +21,16 @@ final_df = load_data()
 
 # --- Calculate LRFM ---
 def calculate_lrfm(df):
+    # Filter out customers with no transactions before calculating LRFM
+    df = df.dropna(subset=['transaction_date'])
+    
     snapshot_date = df['transaction_date'].max().date() + pd.Timedelta(days=1)
+    
+    # Use a custom lambda function for Length to handle customers with a single transaction
     rfm_df = df.groupby('customer_id').agg(
         Recency=('transaction_date', lambda x: (snapshot_date - x.max().date()).days),
         Frequency=('transaction_date', 'count'),
-        Length=('transaction_date', lambda x: (x.max().date() - x.min().date()).days),
+        Length=('transaction_date', lambda x: (x.max().date() - x.min().date()).days if len(x) > 1 else 0),
         Monetary=('Profit', 'sum')
     ).reset_index()
     return rfm_df
@@ -82,3 +87,4 @@ with col2:
 st.subheader("Segment Data")
 selected_cluster = st.selectbox("Select a Cluster to view data:", options=cluster_analysis['Cluster'].unique())
 st.dataframe(rfm_df[rfm_df['Cluster'] == selected_cluster])
+st.write(f"Total Customers in Cluster {selected_cluster}: {rfm_df[rfm_df['Cluster'] == selected_cluster].shape[0]}")
