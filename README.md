@@ -2,8 +2,6 @@
 
 **Live Application Demo: https://dcsanalytics.streamlit.app/** 
 
-![App Screenshot](https://drive.google.com/file/d/1ZiNrWx0sU3hVmhBVj4f5Nf7CfUiLwtmx/view?usp=sharing)
-
 ---
 
 ## 1. Project Overview
