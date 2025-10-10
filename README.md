@@ -1,7 +1,6 @@
 # Dynamic Customer Segmentation & Forecasting
 
-**Live Application Demo: https://dcsanalytics.streamlit.app/** 
-
+**Live Application Demo:** <https://dcsanalysis.streamlit.app/>
 ---
 
 ## 1. Project Overview
@@ -18,28 +17,27 @@ This project was developed as a final year capstone, demonstrating a full data s
 
 ## 2. Key Features
 
-* **Interactive Dashboard:** Built with Streamlit for a user-friendly and interactive experience.
-* **Dynamic Clustering:** Allows the user to select the number of customer segments (`k`) to create.
-* **Time Series Analysis:** Models customer behavior on a month-by-month basis instead of a single snapshot.
-* **LRFM Segmentation:** Utilizes the robust LRFM model to characterize customer value from multiple dimensions.
-* **Future-Facing Forecasts:** Uses the Prophet library to predict the average monthly spend for each segment for the next 6 months.
-* **Actionable Insights:** Translates complex data into clear customer personas and strategic business recommendations.
+-   **Interactive BI Dashboard:** Built with Streamlit to provide a user-friendly and exploratory experience similar to Power BI or Tableau.
+-   **Dynamic Clustering:** Allows the user to select the number of customer segments (`k`) and the clustering algorithm (fast Euclidean vs. accurate DTW) via sidebar controls.
+-   **Time-Series Analysis:** Models customer behavior on a month-by-month basis, capturing trends and patterns that static analysis would miss.
+-   **LRFM Segmentation:** Utilizes the robust LRFM model to characterize customer value from multiple dimensions: Loyalty (Length), Engagement (Recency), Habit (Frequency), and Value (Monetary).
+-   **Future-Facing Forecasts:** Uses the `Prophet` library to generate interactive 6-month spend forecasts for each segment, complete with uncertainty intervals.
+-   **Deep-Dive Analysis:** Provides detailed demographic and geographic breakdowns (Age, Wealth, State) for each customer segment.
 
 ---
 
 ## 3. Technical Stack
 
-* **Language:** Python
-* **Core Libraries:**
-    * **Data Manipulation:** Pandas, NumPy
-    * **Time Series Clustering:** `tslearn` (specifically `TimeSeriesKMeans` with DTW metric)
-    * **Forecasting:** `prophet` (by Facebook)
-    * **Machine Learning Utilities:** `scikit-learn`
-* **Dashboard & Visualization:**
-    * **Web Framework:** Streamlit
-    * **Interactive Charts:** Plotly
-    * **Static Plots:** Matplotlib
-* **Deployment:** Streamlit Community Cloud, GitHub
+-   **Language:** Python
+-   **Core Libraries:**
+    -   **Data Manipulation:** Pandas, NumPy
+    -   **Time-Series Clustering:** `tslearn` (specifically `TimeSeriesKMeans`)
+    -   **Forecasting:** `prophet` (by Facebook)
+    -   **Machine Learning Utilities:** `scikit-learn`
+-   **Dashboard & Visualization:**
+    -   **Web Framework:** Streamlit
+    -   **Interactive Charts:** Plotly (Radar, Pie, Bar, Scatter), Matplotlib
+-   **Deployment:** Streamlit Community Cloud, GitHub
 
 ---
 
@@ -48,29 +46,30 @@ This project was developed as a final year capstone, demonstrating a full data s
 The project follows a standard data science pipeline:
 
 1.  **Data Preparation & Cleaning:**
-    * The three raw datasets (`Transactions`, `Demographics`, `Address`) are loaded.
-    * They are merged into a single Analytical Base Table (ABT).
-    * Data types are corrected (e.g., `transaction_date` to datetime) and missing values are handled.
+    -   The three raw datasets (`Transactions`, `Demographics`, `Address`) are loaded using Pandas.
+    -   They are merged into a single Analytical Base Table (ABT).
+    -   Data is cleaned by filtering for 'Approved' order statuses, converting data types (e.g., `transaction_date` to datetime), and handling missing values.
 
-2.  **Time Series Aggregation:**
-    * The transactional log is converted into a monthly time series for each customer.
-    * For each month, `Frequency` (count of purchases) and `Monetary` (sum of purchases) are calculated.
+2.  **Time-Series Aggregation:**
+    -   The transactional log is converted into a monthly time series for each customer using `pandas.resample('M')`.
+    -   For each month, `Frequency` (count of purchases) and `Monetary` (sum of purchases) are calculated.
 
 3.  **LRFM Feature Engineering:**
-    * The time series data is enriched with the final LRFM features:
-        * **Length (L):** Tenure of the customer in days, calculated from their first purchase to their latest purchase in the period.
-        * **Recency (R'):** Days since the customer's last purchase within the period.
-        * **Frequency (F):** Number of transactions in the period.
-        * **Monetary (M):** Total amount spent in the period.
+    -   The time-series data is enriched with the final LRFM features, calculated for each customer for each monthly time step:
+        -   **Length (L):** Tenure of the customer in days, calculated from their very first purchase to their latest purchase within that period.
+        -   **Recency (R):** Days since the customer's last purchase at the end of that period.
+        -   **Frequency (F):** Number of transactions in the period.
+        -   **Monetary (M):** Total amount spent in the period.
 
-4.  **Multivariate Time Series Clustering:**
-    * The data is reshaped into a 3D array (`n_customers`, `n_timesteps`, `n_features`) required by `tslearn`.
-    * Features are scaled to a `[0, 1]` range to ensure equal weighting.
-    * `TimeSeriesKMeans` is used with the **Dynamic Time Warping (DTW)** metric to group customers with similar LRFM patterns over time.
+4.  **Multivariate Time-Series Clustering:**
+    -   The data is reshaped into a 3D array (`n_customers`, `n_timesteps`, `n_features`) required by `tslearn`.
+    -   All features are scaled to a `[0, 1]` range using `TimeSeriesScalerMinMax` to ensure they are weighted equally.
+    -   `TimeSeriesKMeans` is used to group customers with similar LRFM patterns over time. The dashboard allows the user to choose between the fast `euclidean` metric and the more accurate but slower `dtw` (Dynamic Time Warping) metric.
 
 5.  **Forecasting:**
-    * The historical average monthly spend for each identified cluster is fed into a `Prophet` model.
-    * A 6-month forecast is generated, complete with uncertainty intervals, for each segment.
+    -   The historical average monthly spend for each identified cluster is aggregated.
+    -   This aggregated time-series data is fed into a `Prophet` model for each segment.
+    -   A 6-month forecast is generated, complete with `yhat_upper` and `yhat_lower` values, which are used to visualize the uncertainty interval.
 
 ---
 
@@ -79,13 +78,13 @@ The project follows a standard data science pipeline:
 To run this application on your local machine, please follow these steps:
 
 1.  **Prerequisites:**
-    * Python 3.8 - 3.10
-    * `git` for cloning the repository.
+    -   Python 3.8 - 3.10
+    -   `git` for cloning the repository.
 
 2.  **Clone the Repository:**
     ```bash
-    git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git)
-    cd your-repo-name
+    git clone [https://github.com/prathamesh-satav/Dynamic-Customer-Segmentation-using-LRFM-analysis.git](https://github.com/prathamesh-satav/Dynamic-Customer-Segmentation-using-LRFM-analysis.git)
+    cd Dynamic-Customer-Segmentation-using-LRFM-analysis
     ```
 
 3.  **Create and Activate a Virtual Environment:**
@@ -106,7 +105,6 @@ To run this application on your local machine, please follow these steps:
     ```
 
 5.  **Run the Streamlit App:**
-    *Ensure your three data files (`Transactions_Cleaned.csv`, etc.) are in the root directory.*
     ```bash
     streamlit run app.py
     ```
@@ -115,10 +113,11 @@ To run this application on your local machine, please follow these steps:
 ---
 
 ## 6. Project Structure
-├── 📄 app.py                     # The main Streamlit application script
-├── 📄 requirements.txt           # A list of all necessary Python libraries
-├── 📄 README.md                  # This detailed project explanation
-└── 📁 data/                      # Folder containing the source data
-    ├── 📄 Transactions_Cleaned.csv
-    ├── 📄 CustomerDemographic_Cleaned.csv
-    └── 📄 CustomerAddress_Cleaned.csv
+.
+├── 📁 data/
+│   ├── 📄 Transactions_Cleaned.csv
+│   ├── 📄 CustomerDemographic_Cleaned.csv
+│   └── 📄 CustomerAddress_Cleaned.csv
+├── 📄 app.py
+├── 📄 requirements.txt
+└── 📄 README.md
